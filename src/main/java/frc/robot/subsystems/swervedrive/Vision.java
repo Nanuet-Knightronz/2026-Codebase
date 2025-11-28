@@ -452,6 +452,7 @@ public class Vision
 
         cameraSim = new PhotonCameraSim(camera, cameraProp);
         cameraSim.enableDrawWireframe(true);
+        cameraSim.enableRawStream(true);
       }
     }
 
