@@ -48,4 +48,9 @@ public final class Constants
     public static final double RIGHT_X_DEADBAND = 0.1;
     public static final double TURN_CONSTANT    = 6;
   }
+
+  public static class IntakeConstant {
+    public static final int leftArmSparkID = 0;
+    public static final int rightArmSparkID = 1;
+  }
 }
