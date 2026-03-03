@@ -8,17 +8,17 @@ import java.lang.ModuleLayer.Controller;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Intake;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.Mechanisms.IntakeSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class IntakeCommands extends Command {
   /** Creates a new IntakeCommands. */
 
-  private final Intake intakeSubsystem;
+  private final IntakeSubsystem intakeSubsystem;
   private final CommandXboxController xboxController; 
 
-  public IntakeCommands(Intake intakeSubsystem, CommandXboxController xboxController) {
+  public IntakeCommands(IntakeSubsystem intakeSubsystem, CommandXboxController xboxController) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.intakeSubsystem = intakeSubsystem;
     this.xboxController = xboxController;
