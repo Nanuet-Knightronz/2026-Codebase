@@ -5,6 +5,7 @@
 package frc.robot.subsystems.Mechanisms;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.Constants.IntakeConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
@@ -23,7 +24,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
+import frc.robot.Constants.MotorConfigs;
 
 public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new Intake. */
@@ -37,16 +38,16 @@ public class IntakeSubsystem extends SubsystemBase {
   public IntakeSubsystem() {
 
     //SPARK SETUP
-    leftArmSpark = new Spark(Constants.IntakeConstant.leftArmSparkID);
-    rightArmSpark = new Spark(Constants.IntakeConstant.rightArmSparkID);
+    leftArmSpark = new Spark(IntakeConstants.leftArmSparkID);
+    rightArmSpark = new Spark(IntakeConstants.rightArmSparkID);
 
     //SPARKMAX SETUP
     SparkMaxConfig globalConfig = new SparkMaxConfig();
       globalConfig.smartCurrentLimit(40)
       .idleMode(IdleMode.kCoast);
 
-    topRollerSparkMax = new SparkMax(48, MotorType.kBrushless);
-    bottomRollerSparkMax = new SparkMax(47, MotorType.kBrushless);
+    bottomRollerSparkMax = new SparkMax(IntakeConstants.bottomSparkMaxID, MotorType.kBrushless);
+    topRollerSparkMax = new SparkMax(IntakeConstants.topSparkMaxID, MotorType.kBrushless);
 
     topRollerSparkMax.configure(
         globalConfig, 

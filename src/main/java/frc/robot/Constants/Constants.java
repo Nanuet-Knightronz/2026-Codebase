@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.Constants;
 
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -49,8 +49,14 @@ public final class Constants
     public static final double TURN_CONSTANT    = 6;
   }
 
-  public static class IntakeConstant {
+  public static class IntakeConstants {
+
+    //SPARK PWM IDs
     public static final int leftArmSparkID = 0;
     public static final int rightArmSparkID = 1;
+
+    //SPARKMax CAN IDs
+    public static final int bottomSparkMaxID = 47;
+    public static final int topSparkMaxID = 48;
   }
 }
