@@ -43,13 +43,21 @@ public interface MotorConfigs {
     }
 
     public interface Shooter {
-        SparkBaseConfig FLYWHEEL_MOTOR_CONFIG = new SparkMaxConfig()
+        SparkBaseConfig RIGHT_FLYWHEEL_MOTOR_CONFIG = new SparkMaxConfig()
             .smartCurrentLimit(60)
             .idleMode(IdleMode.kCoast);
+
+        SparkBaseConfig LEFT_FLYWHEEL_MOTOR_CONFIG = new SparkMaxConfig()
+            .smartCurrentLimit(60)
+            .idleMode(IdleMode.kCoast)
+            .follow(25, true);
 
         SparkBaseConfig HOOD_MOTOR_CONFIG = new SparkMaxConfig()
             .smartCurrentLimit(20)
             .idleMode(IdleMode.kBrake);
+        
+        EncoderConfig FLYWHEEL_ENCODER_CONFIG = new EncoderConfig()
+            .countsPerRevolution(8192);
     }
 
     public interface Turret {

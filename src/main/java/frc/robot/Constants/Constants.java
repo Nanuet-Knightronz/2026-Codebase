@@ -59,4 +59,12 @@ public final class Constants
     public static final int bottomSparkMaxID = 47;
     public static final int topSparkMaxID = 48;
   }
+
+  public static class ShooterConstants {
+
+    //SPARKMax CAN IDs
+    public static final int leftFlywheelMotorID = 25;
+    public static final int rightFlywheelMotorID = 35;
+    public static final int hoodMotorID = 36;
+  }
 }
