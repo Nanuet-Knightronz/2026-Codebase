@@ -32,6 +32,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private RelativeEncoder FlywheelEncoder;
 
+  private final SparkPIDController FlywheelPID = RightFlywheelMotor.getPIDController();
+
   public ShooterSubsystem() {
 
     //Creates the flywheel motors
@@ -42,7 +44,7 @@ public class ShooterSubsystem extends SubsystemBase {
     HoodMotor = new SparkMax(ShooterConstants.hoodMotorID, MotorType.kBrushless);
 
     //Creates the flywheel encoder
-    FlywheelEncoder = LeftFlywheelMotor.getAlternateEncoder();
+    FlywheelEncoder = RightFlywheelMotor.getAlternateEncoder();
 
     //Creates the hood encoder
     // RelativeEncoder HoodEncoder = HoodMotor.getAlternateEncoder();
@@ -52,15 +54,15 @@ public class ShooterSubsystem extends SubsystemBase {
     LeftFlywheelMotor.configure(Shooter.LEFT_FLYWHEEL_MOTOR_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     RightFlywheelMotor.configure(Shooter.RIGHT_FLYWHEEL_MOTOR_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     HoodMotor.configure(Shooter.HOOD_MOTOR_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-  
   }
 
   public void setShooterSpeed(double velocity) {
-
+    RightFlywheelMotor.set(velocity);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
   }
 }
