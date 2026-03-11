@@ -6,6 +6,7 @@ package frc.robot.subsystems.Mechanisms;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.estimator.KalmanTypeFilter;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Encoder;
 
 import frc.robot.Constants.Constants.ShooterConstants;
@@ -27,6 +28,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import frc.robot.util.*;
 
 public class ShooterSubsystem extends SubsystemBase {
   /** Creates a new ShooterSubsystem. */
@@ -36,7 +38,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private RelativeEncoder FlywheelEncoder;
 
-  private final SparkClosedLoopController FlywheelPID = RightFlywheelMotor.getClosedLoopController();
+  private final SparkClosedLoopController FlywheelPID;
+
+  private final LinearFilter speedFilter = LinearFilter.movingAverage(5);
+  private double filteredRPM = 0.0;
 
   public ShooterSubsystem() {
 
@@ -50,8 +55,8 @@ public class ShooterSubsystem extends SubsystemBase {
     //Creates the flywheel encoder
     FlywheelEncoder = RightFlywheelMotor.getAlternateEncoder();
 
-    //Creates the hood encoder
-    // RelativeEncoder HoodEncoder = HoodMotor.getAlternateEncoder();
+    //Creates the flywheel PID controller
+    FlywheelPID = RightFlywheelMotor.getClosedLoopController();
 
     //--------------------------------------------------------------------------------------------------------------------------
     //Apply configs to devices
@@ -75,20 +80,15 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public boolean shooterAtSpeed() {
       // Check if the flywheel is within the acceptable error range of the target RPM
-      double currentRPM = FlywheelEncoder.getVelocity();
       double targetRPM = FlywheelPID.getSetpoint();
-      double error = Math.abs(targetRPM - currentRPM);
+      double error = Math.abs(targetRPM - filteredRPM);
 
-      if (error <= 75) {
-        return true;
-      } else {
-        return false;
-      }
+      return error <= 75; 
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
+    filteredRPM = speedFilter.calculate(FlywheelEncoder.getVelocity());
   }
 }
