@@ -6,6 +6,7 @@ package frc.robot.subsystems.Mechanisms;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.estimator.KalmanTypeFilter;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.math.filter.LinearFilter;
 
@@ -28,6 +29,7 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import frc.robot.util.*;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -39,8 +41,15 @@ public class ShooterSubsystem extends SubsystemBase {
   /** Encoders */
   private RelativeEncoder FlywheelEncoder;
 
+<<<<<<< HEAD
   /** Controllers */
   private final SparkClosedLoopController FlywheelPID;
+=======
+  private final SparkClosedLoopController FlywheelPID;
+
+  private final LinearFilter speedFilter = LinearFilter.movingAverage(5);
+  private double filteredRPM = 0.0;
+>>>>>>> a4fc7c0cad14f4e42d662e46164529b8480a15bf
 
   /** Filters */
   private final LinearFilter speedFilter = LinearFilter.movingAverage(5);
@@ -66,7 +75,11 @@ public class ShooterSubsystem extends SubsystemBase {
     // Creates the flywheel encoder
     FlywheelEncoder = RightFlywheelMotor.getAlternateEncoder();
 
+<<<<<<< HEAD
     // Creates the flywheel PID controller
+=======
+    //Creates the flywheel PID controller
+>>>>>>> a4fc7c0cad14f4e42d662e46164529b8480a15bf
     FlywheelPID = RightFlywheelMotor.getClosedLoopController();
 
     //------------------------------------------------------------------
@@ -102,6 +115,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean shooterAtSpeed() {
+<<<<<<< HEAD
 
     // Check if the flywheel is within the acceptable error range
     double currentRPM = FlywheelEncoder.getVelocity();
@@ -109,12 +123,19 @@ public class ShooterSubsystem extends SubsystemBase {
     double error = Math.abs(targetRPM - currentRPM);
 
     return error <= 75;
+=======
+      // Check if the flywheel is within the acceptable error range of the target RPM
+      double targetRPM = FlywheelPID.getSetpoint();
+      double error = Math.abs(targetRPM - filteredRPM);
+
+      return error <= 75; 
+>>>>>>> a4fc7c0cad14f4e42d662e46164529b8480a15bf
   }
 
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-
+    filteredRPM = speedFilter.calculate(FlywheelEncoder.getVelocity());
   }
 }

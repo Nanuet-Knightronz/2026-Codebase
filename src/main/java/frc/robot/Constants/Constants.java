@@ -67,4 +67,18 @@ public final class Constants
     public static final int rightFlywheelMotorID = 35;
     public static final int hoodMotorID = 36;
   }
+
+  public static class TurretConstants {
+    
+    //SPARKMax CAN IDs
+    public static final int turretMotorID = 37;
+  }
+
+  //AdvantageScope Configs
+  public static final boolean tuningMode = false;
+  public static boolean disableHAL = false;
+
+  public static void disableHAL() {
+    disableHAL = true;
+  }
 }
