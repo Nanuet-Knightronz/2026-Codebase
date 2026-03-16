@@ -32,6 +32,9 @@ public class TurretConstants {
     public static final double BIG_ENCODER_OFFSET = 0.0; 
     public static final double SMALL_ENCODER_OFFSET = 0.0; 
 
+    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(615);
+    public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(37);
+
     public static final double TURRET_RPM = 120; 
     public static final double TURRET_RPM_S = 300;
 
