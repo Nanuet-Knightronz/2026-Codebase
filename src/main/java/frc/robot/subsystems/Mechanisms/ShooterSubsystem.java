@@ -7,6 +7,7 @@ package frc.robot.subsystems.Mechanisms;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.estimator.KalmanTypeFilter;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.math.filter.LinearFilter;
 
 import frc.robot.Constants.Constants.ShooterConstants;
 import frc.robot.Constants.MotorConfigs.Shooter;
@@ -29,35 +30,62 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 
 public class ShooterSubsystem extends SubsystemBase {
-  /** Creates a new ShooterSubsystem. */
+
+  /** Motors */
   private SparkMax LeftFlywheelMotor;
   private SparkMax RightFlywheelMotor;
   private SparkMax HoodMotor;
 
+  /** Encoders */
   private RelativeEncoder FlywheelEncoder;
 
-  private final SparkClosedLoopController FlywheelPID = RightFlywheelMotor.getClosedLoopController();
+  /** Controllers */
+  private final SparkClosedLoopController FlywheelPID;
 
+  /** Filters */
+  private final LinearFilter speedFilter = LinearFilter.movingAverage(5);
+  private double filteredRPM = 0.0;
+
+  /** Creates a new ShooterSubsystem */
   public ShooterSubsystem() {
 
-    //Creates the flywheel motors
-    LeftFlywheelMotor = new SparkMax(ShooterConstants.leftFlywheelMotorID, MotorType.kBrushless);
-    RightFlywheelMotor = new SparkMax(ShooterConstants.rightFlywheelMotorID, MotorType.kBrushless);
+    // Creates the flywheel motors
+    LeftFlywheelMotor = new SparkMax(
+        ShooterConstants.leftFlywheelMotorID,
+        MotorType.kBrushless);
 
-    //Creates the hood motor
-    HoodMotor = new SparkMax(ShooterConstants.hoodMotorID, MotorType.kBrushless);
+    RightFlywheelMotor = new SparkMax(
+        ShooterConstants.rightFlywheelMotorID,
+        MotorType.kBrushless);
 
-    //Creates the flywheel encoder
+    // Creates the hood motor
+    HoodMotor = new SparkMax(
+        ShooterConstants.hoodMotorID,
+        MotorType.kBrushless);
+
+    // Creates the flywheel encoder
     FlywheelEncoder = RightFlywheelMotor.getAlternateEncoder();
 
-    //Creates the hood encoder
-    // RelativeEncoder HoodEncoder = HoodMotor.getAlternateEncoder();
+    // Creates the flywheel PID controller
+    FlywheelPID = RightFlywheelMotor.getClosedLoopController();
 
-    //--------------------------------------------------------------------------------------------------------------------------
-    //Apply configs to devices
-    LeftFlywheelMotor.configure(Shooter.LEFT_FLYWHEEL_MOTOR_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    RightFlywheelMotor.configure(Shooter.RIGHT_FLYWHEEL_MOTOR_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    HoodMotor.configure(Shooter.HOOD_MOTOR_CONFIG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);    
+    //------------------------------------------------------------------
+    // Apply configs to devices
+
+    LeftFlywheelMotor.configure(
+        Shooter.LEFT_FLYWHEEL_MOTOR_CONFIG,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+
+    RightFlywheelMotor.configure(
+        Shooter.RIGHT_FLYWHEEL_MOTOR_CONFIG,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+
+    HoodMotor.configure(
+        Shooter.HOOD_MOTOR_CONFIG,
+        ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
   }
 
   public void setShooterSpeed(double shooterRPM) {
@@ -74,17 +102,15 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean shooterAtSpeed() {
-      // Check if the flywheel is within the acceptable error range of the target RPM
-      double currentRPM = FlywheelEncoder.getVelocity();
-      double targetRPM = FlywheelPID.getSetpoint();
-      double error = Math.abs(targetRPM - currentRPM);
 
-      if (error <= 75) {
-        return true;
-      } else {
-        return false;
-      }
+    // Check if the flywheel is within the acceptable error range
+    double currentRPM = FlywheelEncoder.getVelocity();
+    double targetRPM = FlywheelPID.getSetpoint();
+    double error = Math.abs(targetRPM - currentRPM);
+
+    return error <= 75;
   }
+
 
   @Override
   public void periodic() {

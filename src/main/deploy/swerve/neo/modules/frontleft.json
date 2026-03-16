@@ -6,7 +6,7 @@
   "absoluteEncoderOffset": 1.05,
   "drive": {
     "type": "sparkmax_neo",
-    "id": 1,
+    "id": 59,
     "canbus": null
   },
   "angle": {
