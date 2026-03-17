@@ -19,18 +19,18 @@ public class TurretConstants {
 
     public static final double TOTAL_GEAR_RATIO = 800.0 / 19.0;
 
-    public static final double kP = 0.0;
+    public static final double kP = 0.01;
     public static final double kI = 0.0;
     public static final double kD = 0.0;
 
-    public static final int TURRET_MOTOR_ID = 37;
-    public static final int BIG_ENCODER_ID = 1;
-    public static final int SMALL_ENCODER_ID = 0;
+    public static final int TURRET_MOTOR_ID = 36;
+    public static final int BIG_ENCODER_ID = 0;
+    public static final int SMALL_ENCODER_ID = 1;
 
     public static final double POSITION_ERROR_DEGREES = 5;
 
-    public static final double BIG_ENCODER_OFFSET = 0.0; 
-    public static final double SMALL_ENCODER_OFFSET = 0.0; 
+    public static final double BIG_ENCODER_OFFSET = 0.125; 
+    public static final double SMALL_ENCODER_OFFSET = 0.776; 
 
     public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(615);
     public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(37);

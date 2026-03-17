@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.Mechanisms.IntakeSubsystem;
+import frc.robot.subsystems.Mechanisms.Turret.*;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.Constants.Constants.OperatorConstants;
 import frc.robot.commands.IntakeCommands;
@@ -42,7 +43,8 @@ public class RobotContainer
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
   
-  private final IntakeSubsystem intake = new IntakeSubsystem();                                                                            
+  private final IntakeSubsystem intake = new IntakeSubsystem();     
+  private final TurretSubsystem turret = new TurretSubsystem(new TurretIO());                                                                       
 
   // Establish a Sendable Chooser that will be able to be sent to the SmartDashboard, allowing selection of desired auto
   private final SendableChooser<Command> autoChooser;
@@ -193,7 +195,7 @@ public class RobotContainer
     {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.b().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+      driverXbox.b().onTrue(turret.zeroCommand());
       driverXbox.y().whileTrue(drivebase.aimAtTarget(null));
 
       driverXbox.start().whileTrue(Commands.none());
@@ -202,7 +204,20 @@ public class RobotContainer
       driverXbox.rightBumper().whileTrue(intake.lowerIntakeCommand());
 
       driverXbox.rightTrigger().whileTrue(intake.runIntakeCommand());
-      driverXbox.leftTrigger().whileTrue(Commands.none());
+      driverXbox.leftTrigger().whileTrue(turret.commandToSetpoint(() -> Rotation2d.fromDegrees(90), false, drivebase::getHeading));
+      driverXbox.start().onTrue(turret.zeroCommand()); 
+
+      driverXbox.povRight().whileTrue(
+        Commands.run(() -> turret.setVoltage(2.0), turret)
+      );
+
+      driverXbox.povLeft().whileTrue(
+        Commands.run(() -> turret.setVoltage(-2.0), turret)
+    );
+
+      driverXbox.povCenter().onTrue(
+        Commands.runOnce(() -> turret.stop(), turret)
+  );
     }
 
   }

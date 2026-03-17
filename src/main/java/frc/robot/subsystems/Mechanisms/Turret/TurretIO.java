@@ -36,7 +36,8 @@ public class TurretIO {
 
     private SparkMax turretMotor = new SparkMax(TurretConstants.TURRET_MOTOR_ID, SparkMax.MotorType.kBrushless);
     private final DutyCycleEncoder bigEncoder = new DutyCycleEncoder(TurretConstants.BIG_ENCODER_ID);
-    private final AbsoluteEncoder smallEncoder = turretMotor.getAbsoluteEncoder();
+    private final DutyCycleEncoder smallEncoder = new DutyCycleEncoder(TurretConstants.SMALL_ENCODER_ID);
+        
     private final RelativeEncoder relativeEncoder = turretMotor.getEncoder();
 
     private SparkMaxConfig config;
@@ -46,23 +47,16 @@ public class TurretIO {
         config = new SparkMaxConfig();
 
         config.idleMode(IdleMode.kBrake);
-        config.softLimit.forwardSoftLimit(0);
-        config.softLimit.reverseSoftLimit(0);
         config.encoder.positionConversionFactor(1 / TurretConstants.TOTAL_GEAR_RATIO);
         config.encoder.velocityConversionFactor(1 / TurretConstants.TOTAL_GEAR_RATIO);
 
         config.smartCurrentLimit(40);
         config.voltageCompensation(12);
-        config.closedLoop.outputRange(-1, 1, null);
+        config.closedLoop.outputRange(-1, 1);
         
-        config.closedLoop.p(0);
-        config.closedLoop.i(0);
-        config.closedLoop.d(0);
-
-        config.closedLoop.feedForward
-            .kS(0)
-            .kV(0)
-            .kA(0);
+        config.closedLoop.p(TurretConstants.kP);
+        config.closedLoop.i(TurretConstants.kI);
+        config.closedLoop.d(TurretConstants.kD);
         
         config.closedLoop.maxMotion.cruiseVelocity(TurretConstants.TURRET_RPM);
         config.closedLoop.maxMotion.maxAcceleration(TurretConstants.TURRET_RPM_S);
@@ -90,7 +84,7 @@ public class TurretIO {
 
     public Rotation2d getSmallEncoderPosition() {
     return Rotation2d.fromRotations(
-        smallEncoder.getPosition() - TurretConstants.SMALL_ENCODER_OFFSET
+        smallEncoder.get() - TurretConstants.SMALL_ENCODER_OFFSET
     );
 }
 

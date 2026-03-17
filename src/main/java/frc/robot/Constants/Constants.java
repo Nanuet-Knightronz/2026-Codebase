@@ -68,11 +68,11 @@ public final class Constants
     public static final int hoodMotorID = 36;
   }
 
-  public static class TurretConstants {
+  // public static class TurretConstants {
     
-    //SPARKMax CAN IDs
-    public static final int turretMotorID = 37;
-  }
+  //   //SPARKMax CAN IDs
+  //   public static final int turretMotorID = 37;
+  // }
 
   //AdvantageScope Configs
   public static final boolean tuningMode = false;

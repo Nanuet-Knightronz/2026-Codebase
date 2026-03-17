@@ -59,6 +59,9 @@ public class TurretSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Turret Raw Rotations", rawPosition.getRotations());
     SmartDashboard.putNumber("Turret Raw Degrees", rawPositionDegrees);
 
+    SmartDashboard.putNumber("Turret Debug Target Degrees", 0);
+    SmartDashboard.putBoolean("Turret Debug Enable", false);
+
     return Rotation2d.fromRotations(rawPosition.getRotations());
   }
 
@@ -124,6 +127,27 @@ public class TurretSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    SmartDashboard.putNumber("Turret Raw Rotations", TurretCRT().getRotations());
+    SmartDashboard.putNumber("Turret Raw Degrees", TurretCRT().getDegrees());
+
+    double debugAngle = SmartDashboard.getNumber("Turret Debug Target Degrees", 0);
+
+    SmartDashboard.putNumber(
+    "Turret Integrated Encoder Rotations",
+    io.getRelativeEncoderPosition().getRotations()
+    );
+
+    SmartDashboard.putNumber(
+    "Turret Small Encoder Rotations",
+    io.getSmallEncoderPosition().getRotations()
+    );
+
+    SmartDashboard.putNumber(
+    "Turret Big Encoder Rotations",
+    io.getBigEncoderPosition().getRotations()
+    );
+
     // This method will be called once per scheduler run
     if (DriverStation.isDisabled()) {
             stop();

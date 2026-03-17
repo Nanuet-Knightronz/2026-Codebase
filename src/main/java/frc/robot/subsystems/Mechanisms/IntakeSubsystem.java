@@ -17,6 +17,9 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
@@ -29,22 +32,24 @@ import frc.robot.Constants.MotorConfigs;
 public class IntakeSubsystem extends SubsystemBase {
   /** Creates a new Intake. */
 
-  private final Spark leftArmSpark;
-  private final Spark rightArmSpark;
+  private final SparkMax ArmPivotSpark;
 
   private final SparkMax topRollerSparkMax;
   private final SparkMax bottomRollerSparkMax;
 
+  private final SparkClosedLoopController m_controller; 
+
   public IntakeSubsystem() {
 
     //SPARK SETUP
-    leftArmSpark = new Spark(IntakeConstants.leftArmSparkID);
-    rightArmSpark = new Spark(IntakeConstants.rightArmSparkID);
+    ArmPivotSpark = new SparkMax(14, MotorType.kBrushless);
+
+    m_controller = ArmPivotSpark.getClosedLoopController();
 
     //SPARKMAX SETUP
     SparkMaxConfig globalConfig = new SparkMaxConfig();
       globalConfig.smartCurrentLimit(40)
-      .idleMode(IdleMode.kCoast);
+      .idleMode(IdleMode.kBrake);
 
     bottomRollerSparkMax = new SparkMax(IntakeConstants.bottomSparkMaxID, MotorType.kBrushless);
     topRollerSparkMax = new SparkMax(IntakeConstants.topSparkMaxID, MotorType.kBrushless);
@@ -61,13 +66,11 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void raiseIntake(double velocity) {
-    leftArmSpark.set(velocity);
-    rightArmSpark.set(-velocity);
+    
   }
 
-  public void lowerIntake(double velocity) {
-    leftArmSpark.set(-velocity);
-    rightArmSpark.set(velocity);
+  public void lowerIntake() {
+    m_controller.setSetpoint(.5, ControlType.kPosition);
   }
 
   public void runIntake(double intakeVelocity) {
