@@ -27,11 +27,10 @@ import frc.robot.Constants.MotorConfigs.Indexer;
 import frc.robot.commands.IntakeCommands;
 import java.io.File;
 import swervelib.SwerveInputStream;
-
-import frc.robot.subsystems.Mechanisms.IntakeSubsystem;
 import frc.robot.subsystems.Mechanisms.Turret.*;
 import frc.robot.subsystems.Mechanisms.Shooter.*;
 import frc.robot.subsystems.Mechanisms.Indexer.*;
+import frc.robot.subsystems.Mechanisms.Intake.IntakeSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -207,7 +206,7 @@ public class RobotContainer
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(intake.raiseIntakeCommand()); //This needs to supply a command following whileTrue
-      driverXbox.rightBumper().whileTrue(indexer.runCommand(() -> -0.5, () -> .85));
+      driverXbox.rightBumper().whileTrue(indexer.runCommand(() -> -0.25, () -> .85));
 
       driverXbox.rightTrigger().whileTrue(intake.runIntakeCommand());
       driverXbox.leftTrigger().whileTrue(shooter.commandVelocity(()-> 2500)); //This needs to supply a command following whileTrue
