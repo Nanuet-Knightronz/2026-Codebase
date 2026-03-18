@@ -4,5 +4,30 @@
 
 package frc.robot.subsystems.Mechanisms.Indexer;
 
-/** Add your docs here. */
-public class IndexerIO {}
+import org.littletonrobotics.junction.AutoLog;
+
+/** Creates IndexerIO */
+public interface IndexerIO {
+
+    @AutoLog
+    public static class IndexerIOInputs {
+        public double cakeRPM = 0.0;
+        public double feederRPM = 0.0;
+
+        public double cakeAppliedVolts = 0.0;
+        public double feederAppliedVolts = 0.0;
+
+        public double cakeCurrentAmps = 0.0;
+        public double feederCurrentAmps =0.0;
+
+        public boolean cakeMotorConnected = true;
+        public boolean feederMotorConnected = true;
+    }
+
+    default void updateInputs(IndexerIOInputs inputs) {}
+
+    default void setCakeVelocityRPM(double rpm) {}
+
+    default void setFeederVelocityRPM(double rpm) {}
+
+}
