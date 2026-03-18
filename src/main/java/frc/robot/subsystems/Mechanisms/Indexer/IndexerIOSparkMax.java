@@ -26,7 +26,7 @@ public class IndexerIOSparkMax {
     public IndexerIOSparkMax() {
             SparkMaxConfig config = new SparkMaxConfig();
     
-            config.idleMode(IdleMode.kBrake);
+            config.idleMode(IdleMode.kCoast);
     
             config.smartCurrentLimit(40);
             config.voltageCompensation(12);

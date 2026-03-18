@@ -52,7 +52,7 @@ public class ShooterIOTalonFX implements ShooterIO {
     public void setVelocityRPM(double rpm) {
         double rps = rpm / 60.0;
         left.setControl(velocityRequest.withVelocity(rps));
-        // right.setControl(velocityRequest.withVelocity(rps));
+        right.setControl(velocityRequest.withVelocity(-rps));
     }
 
     @Override

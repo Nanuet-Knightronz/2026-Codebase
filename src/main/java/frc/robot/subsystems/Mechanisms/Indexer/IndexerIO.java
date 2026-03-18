@@ -26,8 +26,8 @@ public interface IndexerIO {
 
     default void updateInputs(IndexerIOInputs inputs) {}
 
-    default void setCakeVelocityRPM(double rpm) {}
+    default void cakePower(double speed) {}
 
-    default void setFeederVelocityRPM(double rpm) {}
+    default void feederPower(double speed) {}
 
 }

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.Constants.Constants.OperatorConstants;
+import frc.robot.Constants.MotorConfigs.Indexer;
 import frc.robot.commands.IntakeCommands;
 import java.io.File;
 import swervelib.SwerveInputStream;
@@ -30,6 +31,7 @@ import swervelib.SwerveInputStream;
 import frc.robot.subsystems.Mechanisms.IntakeSubsystem;
 import frc.robot.subsystems.Mechanisms.Turret.*;
 import frc.robot.subsystems.Mechanisms.Shooter.*;
+import frc.robot.subsystems.Mechanisms.Indexer.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -47,7 +49,8 @@ public class RobotContainer
   
   private final IntakeSubsystem intake = new IntakeSubsystem();     
   private final TurretSubsystem turret = new TurretSubsystem(new TurretIO()); 
-  private final ShooterSubsystem shooter = new ShooterSubsystem(new ShooterIOTalonFX());                                                                      
+  private final ShooterSubsystem shooter = new ShooterSubsystem(new ShooterIOTalonFX());    
+  private final IndexerSubsystem indexer = new IndexerSubsystem(new IndexerIOSparkMax());                                                                   
 
   // Establish a Sendable Chooser that will be able to be sent to the SmartDashboard, allowing selection of desired auto
   private final SendableChooser<Command> autoChooser;
@@ -204,10 +207,10 @@ public class RobotContainer
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
       driverXbox.leftBumper().whileTrue(intake.raiseIntakeCommand()); //This needs to supply a command following whileTrue
-      driverXbox.rightBumper().whileTrue(intake.lowerIntakeCommand());
+      driverXbox.rightBumper().whileTrue(indexer.runCommand(() -> -0.5, () -> .85));
 
       driverXbox.rightTrigger().whileTrue(intake.runIntakeCommand());
-      driverXbox.leftTrigger().whileTrue(shooter.commandVelocity(()-> 5000)); //This needs to supply a command following whileTrue
+      driverXbox.leftTrigger().whileTrue(shooter.commandVelocity(()-> 2500)); //This needs to supply a command following whileTrue
       driverXbox.start().onTrue(turret.zeroCommand()); 
 
       driverXbox.povRight().whileTrue(
