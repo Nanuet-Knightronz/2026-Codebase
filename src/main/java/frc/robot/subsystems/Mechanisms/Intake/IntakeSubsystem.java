@@ -1,97 +1,101 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.Mechanisms.Intake;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.Constants.IntakeConstants;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import edu.wpi.first.wpilibj.motorcontrol.*;
-
-import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.MotorConfigs;
+import edu.wpi.first.wpilibj2.command.*;
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.AutoLogOutput;
 
+import frc.robot.util.LoggedTunableNumber;
+
+/** Intake Arm Subsystem using NEO with Spark MAX */
 public class IntakeSubsystem extends SubsystemBase {
-  /** Creates a new Intake. */
 
-  private final SparkMax ArmPivotSpark;
+    private static boolean hasInstance = false;
 
-  private final SparkMax topRollerSparkMax;
-  private final SparkMax bottomRollerSparkMax;
+    // Tunable PID gains for Spark MAX position control
+    private final LoggedTunableNumber kP = new LoggedTunableNumber("Intake/kP", 0.1);
+    private final LoggedTunableNumber kI = new LoggedTunableNumber("Intake/kI", 0.0);
+    private final LoggedTunableNumber kD = new LoggedTunableNumber("Intake/kD", 0.0);
+    private final LoggedTunableNumber kS = new LoggedTunableNumber("Intake/kS", 0.0);
+    private final LoggedTunableNumber kV = new LoggedTunableNumber("Intake/kV", 0.1);
 
-  private final SparkClosedLoopController m_controller; 
+    private final IntakeIO io;
+    private final IntakeIO.IntakeIOInputs inputs = new IntakeIO.IntakeIOInputs();
 
-  public IntakeSubsystem() {
+    @AutoLogOutput(key = "Intake/FilteredPosition")
+    private double filteredPosition = 0.0;
 
-    //SPARK SETUP
-    ArmPivotSpark = new SparkMax(14, MotorType.kBrushless);
+    @AutoLogOutput(key = "Intake/Setpoint")
+    private double setpoint = 0.0;
 
-    m_controller = ArmPivotSpark.getClosedLoopController();
+    /** Alerts for motor connection */
+    // Optional if you want to monitor connection
+    // private final Alert motorDisconnected = new Alert("Intake motor disconnected", Alert.AlertType.kError);
 
-    //SPARKMAX SETUP
-    SparkMaxConfig globalConfig = new SparkMaxConfig();
-      globalConfig.smartCurrentLimit(40)
-      .idleMode(IdleMode.kBrake);
+    /** Singleton pattern */
+    public IntakeSubsystem(IntakeIO io) {
+        if (hasInstance) throw new IllegalStateException("IntakeSubsystem already exists");
+        hasInstance = true;
+        this.io = io;
+    }
 
-    bottomRollerSparkMax = new SparkMax(IntakeConstants.bottomSparkMaxID, MotorType.kBrushless);
-    topRollerSparkMax = new SparkMax(IntakeConstants.topSparkMaxID, MotorType.kBrushless);
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
 
-    topRollerSparkMax.configure(
-        globalConfig, 
-          ResetMode.kResetSafeParameters, 
-          PersistMode.kPersistParameters);
+        // Optional: simple moving average filter
+        filteredPosition = inputs.position; // or add a LinearFilter if needed
 
-    bottomRollerSparkMax.configure(
-        globalConfig, 
-          ResetMode.kResetSafeParameters, 
-          PersistMode.kPersistParameters);
-  }
+        // Update PID gains if tunable
+        io.configPID(kP.get(), kI.get(), kD.get(), kV.get(), kS.get());
 
-  public void raiseIntake(double velocity) {
-    
-  }
+        // Optionally check connection
+        // motorDisconnected.set(!inputs.motorConnected);
+        SmartDashboard.putNumber("Arm Position", filteredPosition);
+        SmartDashboard.putNumber("Arm Setpoint", setpoint);
+    }
 
-  public void lowerIntake() {
-    m_controller.setSetpoint(.5, ControlType.kPosition);
-  }
+    private boolean isDown = false;
 
-  public void runIntake(double intakeVelocity) {
-    topRollerSparkMax.set(-intakeVelocity);
-    bottomRollerSparkMax.set(-intakeVelocity);
-  }
+    public boolean isDown() {
+      return isDown;
+    }
 
-  public Command raiseIntakeCommand() {
-    return runEnd(()-> {raiseIntake(1);}, ()-> {raiseIntake(0);});
-  }
+    /** Move arm to a position (degrees) */
+    public void moveToPosition(double degrees) {
+        setpoint = degrees;
+        io.setPosition(degrees);
+    }
 
-  public Command lowerIntakeCommand() {
-    return runEnd(()-> {raiseIntake(-1);}, ()-> {raiseIntake(0);});
-  }
+    /** Simple command for up position */
+    public Command moveUpCommand() {
+        return runOnce(() -> moveToPosition(100)); // adjust your up angle
+    }
 
-  public Command runIntakeCommand() {
-    return runEnd(()-> {runIntake(.35);}, ()-> {runIntake(0);});
-  }
-  
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+    /** Simple command for down position */
+    public Command moveDownCommand() {
+        return runOnce(() -> moveToPosition(0)); // parallel to ground
+    }
+
+    /** Stop motor (optional) */
+    public void stop() {
+        io.setVoltage(0);
+    }
+
+    /** Create a command that holds the current setpoint */
+    public Command holdPositionCommand() {
+        return runEnd(() -> moveToPosition(setpoint), this::stop);
+    }
+
+    public Command toggleCommand() {
+    return runOnce(() -> {
+        if (isDown) {
+            moveToPosition(100);
+        } else {
+            moveToPosition(0);
+        }
+        isDown = !isDown;
+    });
+}
 }

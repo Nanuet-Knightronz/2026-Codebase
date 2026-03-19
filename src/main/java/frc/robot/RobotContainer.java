@@ -24,13 +24,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.Constants.Constants.OperatorConstants;
 import frc.robot.Constants.MotorConfigs.Indexer;
-import frc.robot.commands.IntakeCommands;
 import java.io.File;
 import swervelib.SwerveInputStream;
+
+
 import frc.robot.subsystems.Mechanisms.Turret.*;
 import frc.robot.subsystems.Mechanisms.Shooter.*;
 import frc.robot.subsystems.Mechanisms.Indexer.*;
-import frc.robot.subsystems.Mechanisms.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Mechanisms.Intake.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -46,10 +47,10 @@ public class RobotContainer
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
   
-  private final IntakeSubsystem intake = new IntakeSubsystem();     
+  private final IntakeSubsystem intake = new IntakeSubsystem(new IntakeIOSparkMax());     
   private final TurretSubsystem turret = new TurretSubsystem(new TurretIO()); 
   private final ShooterSubsystem shooter = new ShooterSubsystem(new ShooterIOTalonFX());    
-  private final IndexerSubsystem indexer = new IndexerSubsystem(new IndexerIOSparkMax());                                                                   
+  private final IndexerSubsystem indexer = new IndexerSubsystem(new IndexerIOSparkMax());                                                       
 
   // Establish a Sendable Chooser that will be able to be sent to the SmartDashboard, allowing selection of desired auto
   private final SendableChooser<Command> autoChooser;
@@ -190,6 +191,7 @@ public class RobotContainer
     if (DriverStation.isTest())
     {
       drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
+      intake.setDefaultCommand(intake.holdPositionCommand());
 
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
@@ -205,11 +207,12 @@ public class RobotContainer
 
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
-      driverXbox.leftBumper().whileTrue(intake.raiseIntakeCommand()); //This needs to supply a command following whileTrue
+      driverXbox.leftBumper().whileTrue(intake.toggleCommand()); 
       driverXbox.rightBumper().whileTrue(indexer.runCommand(() -> -0.25, () -> .85));
 
-      driverXbox.rightTrigger().whileTrue(intake.runIntakeCommand());
-      driverXbox.leftTrigger().whileTrue(shooter.commandVelocity(()-> 2500)); //This needs to supply a command following whileTrue
+      // driverXbox.rightTrigger().whileTrue(intake.runIntakeCommand());
+      driverXbox.leftTrigger().whileTrue(shooter.commandVelocity(()-> 2500)); 
+
       driverXbox.start().onTrue(turret.zeroCommand()); 
 
       driverXbox.povRight().whileTrue(
