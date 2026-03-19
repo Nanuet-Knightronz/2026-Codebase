@@ -80,7 +80,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command intakeInCommand() {
     return runEnd(
-        () -> io.setRollerVoltage(6),
+        () -> io.setRollerVoltage(-6),
         () -> io.setRollerVoltage(0)
     );
 }
@@ -99,9 +99,9 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command toggleCommand() {
     return runOnce(() -> {
         if (isDown) {
-            moveToPosition(100);
+            moveToPosition(-100);
         } else {
-            moveToPosition(0);
+            moveToPosition(-45);
         }
         isDown = !isDown;
     });
