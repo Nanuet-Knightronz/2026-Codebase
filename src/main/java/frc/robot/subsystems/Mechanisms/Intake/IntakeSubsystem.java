@@ -78,6 +78,14 @@ public class IntakeSubsystem extends SubsystemBase {
         return runOnce(() -> moveToPosition(0)); // parallel to ground
     }
 
+    public Command intakeInCommand() {
+    return runEnd(
+        () -> io.setRollerVoltage(6),
+        () -> io.setRollerVoltage(0)
+    );
+}
+
+
     /** Stop motor (optional) */
     public void stop() {
         io.setVoltage(0);
