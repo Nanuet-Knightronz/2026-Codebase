@@ -216,7 +216,7 @@ public class RobotContainer
       driverXbox.rightTrigger().whileTrue(intake.intakeInCommand());
       driverXbox.leftTrigger().whileTrue(
         Commands.parallel(
-          shooter.commandVelocity(() -> 3000),
+          shooter.commandVelocity(() -> 5000),
           FeedingCommands.feedCommand(turret, shooter, indexer)
       )
 );
