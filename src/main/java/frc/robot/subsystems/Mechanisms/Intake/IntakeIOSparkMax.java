@@ -74,4 +74,9 @@ public class IntakeIOSparkMax implements IntakeIO {
       topRoller.setVoltage(volts);
       bottomRoller.setVoltage(volts);
     }
+
+    @Override
+    public void zeroEncoder() {
+        armMotor.getEncoder().setPosition(0);
+    }
 }

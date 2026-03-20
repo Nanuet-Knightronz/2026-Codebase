@@ -22,4 +22,5 @@ public interface IntakeIO {
     default void configPID(double kP, double kI, double kD, double kV, double kS) {}
 
     default void setRollerVoltage(double volts) {}
+    default void zeroEncoder() {}
 }
