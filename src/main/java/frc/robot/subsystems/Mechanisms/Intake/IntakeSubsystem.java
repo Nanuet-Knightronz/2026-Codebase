@@ -121,15 +121,4 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command holdPositionCommand() {
         return runEnd(() -> moveToPosition(setpoint), this::stop);
     }
-
-    public Command toggleCommand() {
-    return runOnce(() -> {
-        if (isDown) {
-            moveToPosition(100);
-        } else {
-            moveToPosition(0);
-        }
-        isDown = !isDown;
-    });
-}
 }

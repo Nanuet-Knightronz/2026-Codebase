@@ -1,157 +1,129 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.Mechanisms.Turret;
 
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.Mechanisms.Turret.TurretConstants;
 
 public class TurretSubsystem extends SubsystemBase {
-  /** Creates a new TurretSubsystem. */
+
   private final TurretIO io;
-  private Rotation2d setpointRotation = Rotation2d.kZero;
 
-  public TurretSubsystem(TurretIO turretIO) {
-    this.io = turretIO;
+  private boolean initialized = false;
+  private double enableTimer = 0.0;
+
+  private Rotation2d zeroOffset = Rotation2d.kZero;
+
+  public TurretSubsystem(TurretIO io) {
+    this.io = io;
   }
 
-  public Rotation2d TurretCRT() {
-    double smallEncoderPosition = io.getSmallEncoderPosition().getRotations();
-    double bigEncoderPosition = io.getBigEncoderPosition().getRotations();
-
-    double[] smallEncoderPositions = new double[12];
-    double[] bigEncoderPositions = new double[12];
-    double output = 0.0;
-    double minimumValue = 1.0;
-
-    //generate possible positions
-    for (int i = 0; i < 12; i++) {
-      smallEncoderPositions[i] = 
-        (i + (smallEncoderPosition)) * ((double) TurretConstants.SMALL_ENCODER_TEETH_COUNT / TurretConstants.TURRET_TEETH_COUNT);
-      bigEncoderPositions[i] = 
-        (i + (bigEncoderPosition)) * ((double) TurretConstants.BIG_ENCODER_TEETH_COUNT / TurretConstants.TURRET_TEETH_COUNT);
-    }
-
-    for (int i = 0; i < 12; i++) {
-      for (int z = 0; z < 12; z++) {
-        if (Math.abs(smallEncoderPositions[i] - bigEncoderPositions[z]) < minimumValue) {
-          output = (smallEncoderPositions[i] + bigEncoderPositions[z]) / 2.0;
-          minimumValue = Math.abs(smallEncoderPositions[i] - bigEncoderPositions[z]);
-        }
-      }
-    }
-
-    Rotation2d lastCRTError = Rotation2d.fromRotations(minimumValue);
-
-    Rotation2d rawPosition = Rotation2d.fromRotations(output);
-    double rawPositionDegrees = rawPosition.getDegrees();
-
-    SmartDashboard.putNumber("Turret Raw Rotations", rawPosition.getRotations());
-    SmartDashboard.putNumber("Turret Raw Degrees", rawPositionDegrees);
-
-    SmartDashboard.putNumber("Turret Debug Target Degrees", 0);
-    SmartDashboard.putBoolean("Turret Debug Enable", false);
-
-    return Rotation2d.fromRotations(rawPosition.getRotations());
+  private double normalizeRotations(double rotations) {
+    rotations %= 1.0;
+    return rotations < 0 ? rotations + 1.0 : rotations;
   }
 
-  public Rotation2d unwrapTurretAngle(Rotation2d targetAngle) {
-    double targetRot = targetAngle.getRotations();
-    double currentRot = io.getRelativeEncoderPosition().getRotations();
-    double bestRot = 0.0;
-    boolean hasBestRot = false;
+  private Rotation2d getAbsoluteAngle() {
+    return Rotation2d.fromRotations(
+        normalizeRotations(io.getSmallEncoderPosition().getRotations())
+    );
+  }
 
-    for (int i = -2; i <= 2; i++) {
-      double candidate = targetRot + i; // consider multiple revolutions
-      if (candidate < TurretConstants.MIN_ANGLE.getRotations() || candidate > TurretConstants.MAX_ANGLE.getRotations()) {
-        continue;
-      }
-      if (!hasBestRot || Math.abs(candidate - currentRot) < Math.abs(bestRot - currentRot)) {
-        hasBestRot = true;
-        bestRot = candidate;
-      }
-    }
+  public Rotation2d getPosition() {
+    return io.getRelativeEncoderPosition();
+  }
 
-    return Rotation2d.fromRotations(bestRot);
+  private void seedRelativeEncoder() {
+    io.seedMotorPosition(getAbsoluteAngle());
   }
 
   public void stop() {
-        io.setVoltage(0);
+    io.setVoltage(0.0);
+  }
+
+  public void setVoltage(double volts) {
+    io.setVoltage(MathUtil.clamp(volts, -12.0, 12.0));
+  }
+
+  private Rotation2d unwrapTarget(Rotation2d target) {
+    double targetRotations = target.getRotations();
+    double currentRotations = getPosition().getRotations();
+
+    double bestCandidate = targetRotations;
+    double smallestError = Double.POSITIVE_INFINITY;
+
+    for (int offset = -2; offset <= 2; offset++) {
+
+      double candidate = targetRotations + offset;
+
+      boolean withinLimits =
+          candidate >= TurretConstants.MIN_ANGLE.getRotations() &&
+          candidate <= TurretConstants.MAX_ANGLE.getRotations();
+
+      if (!withinLimits) continue;
+
+      double error = Math.abs(candidate - currentRotations);
+
+      if (error < smallestError) {
+        smallestError = error;
+        bestCandidate = candidate;
+      }
     }
 
-  public void setSetpoint(Rotation2d position) {
-        setpointRotation = unwrapTurretAngle(position);
-        io.setSetpoint(setpointRotation);
-    }
+    return Rotation2d.fromRotations(bestCandidate);
+  }
 
-   public Command zeroCommand() {
-        return runOnce(this::stop)
-                .andThen(runOnce(() -> {
-                    io.seedMotorPosition(TurretCRT());
-                }))
-                .withName("TurretZeroCommand");
-    }
+  public void setTarget(Rotation2d target) {
+    Rotation2d correctedTarget = target.plus(zeroOffset);
+    io.setSetpoint(unwrapTarget(correctedTarget));
+  }
 
-    public Command commandToSetpoint(
-        Supplier<Rotation2d> rotation,
-        boolean isFieldRelative,
-        Supplier<Rotation2d> robotHeading) {
+  public Command zero() {
+    return runOnce(() -> {
+      zeroOffset = getAbsoluteAngle();
+      seedRelativeEncoder();
+    });
+  }
 
+  public Command zeroCommand() {
+    return runOnce(() -> zeroOffset = getAbsoluteAngle());
+  }
+
+  public Command aimCommand(
+      Supplier<Rotation2d> targetSupplier,
+      boolean fieldRelative,
+      Supplier<Rotation2d> robotHeadingSupplier
+  ) {
     return runEnd(
-            () -> setSetpoint(
-                    rotation.get().minus(
-                            isFieldRelative
-                                    ? robotHeading.get()
-                                    : Rotation2d.kZero)),
-            this::stop)
-        .withName("TurretSetpointCommand");
-}
+        () -> {
+          Rotation2d target = targetSupplier.get();
 
-    public void setVoltage(double voltage) {
-        io.setVoltage(voltage);
-    }
+          if (fieldRelative) {
+            target = target.minus(robotHeadingSupplier.get());
+          }
 
-    public Rotation2d getPosition() {
-        return io.getRelativeEncoderPosition();
-    }
+          setTarget(target);
+        },
+        this::stop
+    );
+  }
 
   @Override
   public void periodic() {
+    if (RobotState.isEnabled()) {
+      enableTimer += 0.02;
 
-    SmartDashboard.putNumber("Turret Raw Rotations", TurretCRT().getRotations());
-    SmartDashboard.putNumber("Turret Raw Degrees", TurretCRT().getDegrees());
-
-    double debugAngle = SmartDashboard.getNumber("Turret Debug Target Degrees", 0);
-
-    SmartDashboard.putNumber(
-    "Turret Integrated Encoder Rotations",
-    io.getRelativeEncoderPosition().getRotations()
-    );
-
-    SmartDashboard.putNumber(
-    "Turret Small Encoder Rotations",
-    io.getSmallEncoderPosition().getRotations()
-    );
-
-    SmartDashboard.putNumber(
-    "Turret Big Encoder Rotations",
-    io.getBigEncoderPosition().getRotations()
-    );
-
-    // This method will be called once per scheduler run
-    if (DriverStation.isDisabled()) {
-            stop();
-            Rotation2d crtAngle = TurretCRT();   
-  }
+      if (!initialized && enableTimer > 0.25) {
+        seedRelativeEncoder();
+        initialized = true;
+      }
+    } else {
+      enableTimer = 0.0;
+      initialized = false;
+      stop();
+    }
   }
 }
