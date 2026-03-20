@@ -3,17 +3,15 @@ package frc.robot.subsystems.Mechanisms.Intake;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
-import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 import frc.robot.util.LoggedTunableNumber;
 
-/** Intake Arm Subsystem using NEO with Spark MAX */
 public class IntakeSubsystem extends SubsystemBase {
 
     private static boolean hasInstance = false;
 
-    // Tunable PID gains for Spark MAX position control
+    // Tunable PID gains (ONLY used when changed)
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Intake/kP", 0.1);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Intake/kI", 0.0);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Intake/kD", 0.0);
@@ -23,17 +21,18 @@ public class IntakeSubsystem extends SubsystemBase {
     private final IntakeIO io;
     private final IntakeIO.IntakeIOInputs inputs = new IntakeIO.IntakeIOInputs();
 
-    @AutoLogOutput(key = "Intake/FilteredPosition")
-    private double filteredPosition = 0.0;
+    @AutoLogOutput(key = "Intake/Position")
+    private double position = 0.0;
 
     @AutoLogOutput(key = "Intake/Setpoint")
     private double setpoint = 0.0;
 
-    /** Alerts for motor connection */
-    // Optional if you want to monitor connection
-    // private final Alert motorDisconnected = new Alert("Intake motor disconnected", Alert.AlertType.kError);
+    private boolean isDown = false;
 
-    /** Singleton pattern */
+    // Limits (adjust these!)
+    private static final double MIN_ANGLE = 0;
+    private static final double MAX_ANGLE = 110;
+
     public IntakeSubsystem(IntakeIO io) {
         if (hasInstance) throw new IllegalStateException("IntakeSubsystem already exists");
         hasInstance = true;
@@ -44,66 +43,83 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
 
-        // Optional: simple moving average filter
-        filteredPosition = inputs.position; // or add a LinearFilter if needed
+        position = inputs.position;
 
-        // Update PID gains if tunable
-        io.configPID(kP.get(), kI.get(), kD.get(), kV.get(), kS.get());
+        // Only update PID if changed
+        LoggedTunableNumber.ifChanged(
+            hashCode(),
+            () -> io.configPID(kP.get(), kI.get(), kD.get(), kV.get(), kS.get()),
+            kP, kI, kD, kV, kS
+        );
 
-        // Optionally check connection
-        // motorDisconnected.set(!inputs.motorConnected);
-        SmartDashboard.putNumber("Arm Position", filteredPosition);
-        SmartDashboard.putNumber("Arm Setpoint", setpoint);
+        SmartDashboard.putNumber("Intake/Position", position);
+        SmartDashboard.putNumber("Intake/Setpoint", setpoint);
     }
-
-    private boolean isDown = false;
 
     public boolean isDown() {
-      return isDown;
+        return isDown;
     }
 
-    /** Move arm to a position (degrees) */
+    /** Move arm safely */
     public void moveToPosition(double degrees) {
-        setpoint = degrees;
-        io.setPosition(degrees);
+        double clamped = MathUtil.clamp(degrees, MIN_ANGLE, MAX_ANGLE);
+        setpoint = clamped;
+        io.setPosition(clamped);
     }
 
-    /** Simple command for up position */
+    /** Move up */
     public Command moveUpCommand() {
-        return runOnce(() -> moveToPosition(100)); // adjust your up angle
+        return runOnce(() -> {
+            moveToPosition(100);
+            isDown = false;
+        }).withName("IntakeUp");
     }
 
-    /** Simple command for down position */
+    /** Move down */
     public Command moveDownCommand() {
-        return runOnce(() -> moveToPosition(0)); // parallel to ground
+        return runOnce(() -> {
+            moveToPosition(0);
+            isDown = true;
+        }).withName("IntakeDown");
     }
 
+    /** Toggle between up/down */
+    public Command toggleCommand() {
+        return Commands.runOnce(() -> {
+            if (isDown) {
+                moveToPosition(100);
+            } else {
+                moveToPosition(0);
+            }
+            isDown = !isDown;
+        }, this).withName("IntakeToggle");
+    }
+
+    /** Run rollers inward */
     public Command intakeInCommand() {
-    return runEnd(
-        () -> io.setRollerVoltage(6),
-        () -> io.setRollerVoltage(0)
-    );
-}
+        return runEnd(
+            () -> io.setRollerVoltage(6),
+            () -> io.setRollerVoltage(0)
+        ).withName("IntakeIn");
+    }
 
-
-    /** Stop motor (optional) */
+    /** Stop arm motor */
     public void stop() {
         io.setVoltage(0);
     }
 
-    /** Create a command that holds the current setpoint */
-    public Command holdPositionCommand() {
-        return runEnd(() -> moveToPosition(setpoint), this::stop);
+    public void zeroPosition() {
+        io.zeroEncoder();   // delegate to IO layer
+        setpoint = 0;       // keep control stable
     }
 
-    public Command toggleCommand() {
-    return runOnce(() -> {
-        if (isDown) {
-            moveToPosition(100);
-        } else {
-            moveToPosition(0);
-        }
-        isDown = !isDown;
-    });
-}
+    public Command zeroCommand() {
+      return runOnce(this::zeroPosition).withName("IntakeZero");
+    }
+
+    /** Hold last position (IMPORTANT: set as default command) */
+    public Command holdPositionCommand() {
+        return run(() -> io.setPosition(setpoint))
+            .withName("IntakeHold");
+    }
 }
