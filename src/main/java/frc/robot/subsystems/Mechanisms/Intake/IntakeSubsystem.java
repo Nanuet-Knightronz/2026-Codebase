@@ -98,7 +98,7 @@ public class IntakeSubsystem extends SubsystemBase {
     /** Run rollers inward */
     public Command intakeInCommand() {
     return runEnd(
-        () -> io.setRollerVoltage(6),
+        () -> io.setRollerVoltage(-6),
         () -> io.setRollerVoltage(0)
     );
 }

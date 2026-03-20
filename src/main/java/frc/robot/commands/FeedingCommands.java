@@ -42,8 +42,8 @@ public class FeedingCommands {
         BooleanSupplier override
     ) {
         return indexer.runCommand(
-                () -> shouldFeed(turret, shooter, override) ? 0.8 : 0.0,  // spindexer
-                () -> shouldFeed(turret, shooter, override) ? 1.0 : 0.0   // feeder
+                () -> shouldFeed(turret, shooter, override) ? 1.5 : -1.0,  // spindexer
+                () -> shouldFeed(turret, shooter, override) ? -1.5 : 1.0   // feeder
             )
             .alongWith(
                 Commands.run(() -> {
