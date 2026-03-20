@@ -97,11 +97,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
     /** Run rollers inward */
     public Command intakeInCommand() {
-        return runEnd(
-            () -> io.setRollerVoltage(6),
-            () -> io.setRollerVoltage(0)
-        ).withName("IntakeIn");
-    }
+    return runEnd(
+        () -> io.setRollerVoltage(6),
+        () -> io.setRollerVoltage(0)
+    );
+}
 
     /** Stop arm motor */
     public void stop() {
@@ -119,7 +119,17 @@ public class IntakeSubsystem extends SubsystemBase {
 
     /** Hold last position (IMPORTANT: set as default command) */
     public Command holdPositionCommand() {
-        return run(() -> io.setPosition(setpoint))
-            .withName("IntakeHold");
+        return runEnd(() -> moveToPosition(setpoint), this::stop);
     }
+
+    public Command toggleCommand() {
+    return runOnce(() -> {
+        if (isDown) {
+            moveToPosition(100);
+        } else {
+            moveToPosition(0);
+        }
+        isDown = !isDown;
+    });
+}
 }

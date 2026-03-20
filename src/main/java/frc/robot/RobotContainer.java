@@ -22,8 +22,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.subsystems.swervedrive.Vision.*;
 import frc.robot.Constants.Constants.OperatorConstants;
 import frc.robot.Constants.MotorConfigs.Indexer;
+import frc.robot.commands.FeedingCommands;
+
 import java.io.File;
 import swervelib.SwerveInputStream;
 
@@ -210,8 +213,13 @@ public class RobotContainer
       driverXbox.leftBumper().whileTrue(intake.toggleCommand()); 
       driverXbox.rightBumper().whileTrue(indexer.runCommand(() -> -0.25, () -> .85));
 
-      // driverXbox.rightTrigger().whileTrue(intake.runIntakeCommand());
-      driverXbox.leftTrigger().whileTrue(shooter.commandVelocity(()-> 2500)); 
+      driverXbox.rightTrigger().whileTrue(intake.intakeInCommand());
+      driverXbox.leftTrigger().whileTrue(
+        Commands.parallel(
+          shooter.commandVelocity(() -> 3000),
+          FeedingCommands.feedCommand(turret, shooter, indexer)
+      )
+);
 
       driverXbox.start().onTrue(turret.zeroCommand()); 
 
