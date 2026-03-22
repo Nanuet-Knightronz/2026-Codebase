@@ -253,4 +253,8 @@ public class RobotContainer
   {
     drivebase.setMotorBrake(brake);
   }
+
+  public void zeroGyroWithAlliance() {
+    drivebase.zeroGyroWithAlliance();
+  }
 }
