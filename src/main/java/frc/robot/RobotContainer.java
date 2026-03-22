@@ -205,7 +205,7 @@ public class RobotContainer
     {
       driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.b().onTrue(Commands.none());
+      driverXbox.b().onTrue(intake.zeroCommand());
       driverXbox.y().whileTrue(drivebase.aimAtTarget(null));
 
       driverXbox.start().whileTrue(Commands.none());
@@ -216,7 +216,7 @@ public class RobotContainer
       driverXbox.rightTrigger().whileTrue(intake.intakeInCommand());
       driverXbox.leftTrigger().whileTrue(
         Commands.parallel(
-          shooter.commandVelocity(() -> 3000),
+          shooter.commandVelocity(() -> 5000),
           FeedingCommands.feedCommand(turret, shooter, indexer)
       )
 );

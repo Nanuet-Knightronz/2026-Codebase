@@ -70,7 +70,7 @@ public class IntakeSubsystem extends SubsystemBase {
     /** Move up */
     public Command moveUpCommand() {
         return runOnce(() -> {
-            moveToPosition(100);
+            moveToPosition(82.57156372070312);
             isDown = false;
         }).withName("IntakeUp");
     }
@@ -98,7 +98,7 @@ public class IntakeSubsystem extends SubsystemBase {
     /** Run rollers inward */
     public Command intakeInCommand() {
     return runEnd(
-        () -> io.setRollerVoltage(6),
+        () -> io.setRollerVoltage(-6),
         () -> io.setRollerVoltage(0)
     );
 }
