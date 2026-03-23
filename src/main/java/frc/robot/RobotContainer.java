@@ -193,7 +193,7 @@ public class RobotContainer
     }
     if (DriverStation.isTest())
     {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
+      drivebase.setDefaultCommand(drivebase.driveWithSetpointGeneratorFieldRelative(()-> driveAngularVelocity.get())); // Overrides drive command above!
       intake.setDefaultCommand(intake.holdPositionCommand());
 
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
