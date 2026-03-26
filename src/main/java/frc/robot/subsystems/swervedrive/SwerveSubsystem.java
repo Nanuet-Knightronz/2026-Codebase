@@ -95,7 +95,7 @@ public class SwerveSubsystem extends SubsystemBase
       throw new RuntimeException(e);
     }
     swerveDrive.setHeadingCorrection(false); // Heading correction should only be used while controlling the robot via angle.
-    swerveDrive.setCosineCompensator(false);//!SwerveDriveTelemetry.isSimulation); // Disables cosine compensation for simulations since it causes discrepancies not seen in real life.
+    swerveDrive.setCosineCompensator(true);//!SwerveDriveTelemetry.isSimulation); // Disables cosine compensation for simulations since it causes discrepancies not seen in real life.
     swerveDrive.setAngularVelocityCompensation(true,
                                                true,
                                                0.1); //Correct for skew that gets worse as angular velocity increases. Start with a coefficient of 0.1.
@@ -227,23 +227,27 @@ public class SwerveSubsystem extends SubsystemBase
    * @return A {@link Command} which will run the alignment.
    */
   public Command aimAtTarget(Cameras camera)
-  {
+{
+  return run(() -> {
+    Optional<PhotonPipelineResult> resultO = camera.getBestResult();
 
-    return run(() -> {
-      Optional<PhotonPipelineResult> resultO = camera.getBestResult();
-      if (resultO.isPresent())
-      {
-        var result = resultO.get();
-        if (result.hasTargets())
-        {
-          drive(getTargetSpeeds(0,
-                                0,
-                                Rotation2d.fromDegrees(result.getBestTarget()
-                                                             .getYaw()))); // Not sure if this will work, more math may be required.
-        }
-      }
-    });
-  }
+    if (resultO.isPresent() && resultO.get().hasTargets())
+    {
+      double yaw = resultO.get().getBestTarget().getYaw();
+
+      // Simple proportional controller
+      double kP = 0.07; // tune this
+      double rotationSpeed = -yaw * kP;
+
+      drive(new Translation2d(0, 0), -rotationSpeed, true);
+    }
+    else
+    {
+      // STOP if no target
+      drive(new Translation2d(0, 0), 0, true);
+    }
+  });
+}
 
   /**
    * Get the path follower with events.

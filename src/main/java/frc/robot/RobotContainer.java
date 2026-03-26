@@ -193,7 +193,7 @@ public class RobotContainer
     }
     if (DriverStation.isTest())
     {
-      drivebase.setDefaultCommand(driveFieldOrientedAnglularVelocity); // Overrides drive command above!
+      drivebase.setDefaultCommand(drivebase.driveWithSetpointGeneratorFieldRelative(()-> driveAngularVelocity.get())); // Overrides drive command above!
       intake.setDefaultCommand(intake.holdPositionCommand());
 
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
@@ -203,10 +203,10 @@ public class RobotContainer
       driverXbox.rightBumper().onTrue(Commands.none());
     } else
     {
-      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.b().onTrue(intake.zeroCommand());
-      driverXbox.y().whileTrue(drivebase.aimAtTarget(null));
+      driverXbox.y().whileTrue(drivebase.aimAtTarget(Cameras.INTAKE_CAM));
 
       driverXbox.start().whileTrue(Commands.none());
       driverXbox.back().whileTrue(Commands.none());
@@ -252,5 +252,9 @@ public class RobotContainer
   public void setMotorBrake(boolean brake)
   {
     drivebase.setMotorBrake(brake);
+  }
+
+  public void zeroGyroWithAlliance() {
+    drivebase.zeroGyroWithAlliance();
   }
 }
