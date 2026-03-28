@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import java.awt.Desktop;
 import java.util.ArrayList;
@@ -328,6 +329,17 @@ public class Vision
 
     field2d.getObject("tracked targets").setPoses(poses);
   }
+
+  public Optional<Pose2d> getVisionPose() {
+      for (Cameras cam : Cameras.values()) {
+        Optional<EstimatedRobotPose> est = cam.getEstimatedGlobalPose();
+
+        if (est.isPresent()) {
+          return Optional.of(est.get().estimatedPose.toPose2d());
+        }
+      }
+      return Optional.empty();
+    }
 
   /**
    * Camera Enum to select each camera

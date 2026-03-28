@@ -27,12 +27,14 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.Constants;
 import frc.robot.subsystems.swervedrive.Vision.Cameras;
+import frc.robot.subsystems.swervedrive.Vision;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -52,6 +54,8 @@ import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+
 public class SwerveSubsystem extends SubsystemBase
 {
   /**
@@ -70,6 +74,11 @@ public class SwerveSubsystem extends SubsystemBase
   private       Vision      vision;
 
   /**
+   * Vision Field2D for debugging vision pose estimations.
+   */
+  private       Field2d     visionField2d = new Field2d();
+
+  /**
    * Initialize {@link SwerveDrive} with the directory provided.
    *
    * @param directory Directory of swerve drive config files.
@@ -77,6 +86,7 @@ public class SwerveSubsystem extends SubsystemBase
    public SwerveSubsystem(File directory)
   { 
     boolean blueAlliance = false;
+    
     Pose2d startingPose = blueAlliance ? new Pose2d(new Translation2d(Meter.of(1),
                                                                       Meter.of(4)),
                                                     Rotation2d.fromDegrees(0))
@@ -109,6 +119,8 @@ public class SwerveSubsystem extends SubsystemBase
       swerveDrive.stopOdometryThread();
     }
     setupPathPlanner();
+
+    SmartDashboard.putData("Vision Field", visionField2d);
   }
 
   /**
@@ -142,7 +154,12 @@ public class SwerveSubsystem extends SubsystemBase
     {
       swerveDrive.updateOdometry();
       vision.updatePoseEstimation(swerveDrive);
-    }
+    }  
+
+    // Display where the vision thinks that we are on a separate field
+    vision.getVisionPose().ifPresent(pose -> {
+      visionField2d.setRobotPose(pose);
+    });
   }
 
   @Override
