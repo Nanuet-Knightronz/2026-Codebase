@@ -199,7 +199,7 @@ public class RobotContainer
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.back().whileTrue(drivebase.centerModulesCommand());
-      driverXbox.leftBumper().onTrue(Commands.none());
+      driverXbox.b().onTrue(drivebase.sysIdDriveMotorCommand());
       driverXbox.rightBumper().onTrue(Commands.none());
     } else
     {
@@ -216,7 +216,7 @@ public class RobotContainer
       driverXbox.rightTrigger().whileTrue(intake.intakeInCommand());
       driverXbox.leftTrigger().whileTrue(
         Commands.parallel(
-          shooter.commandVelocity(() -> 5000),
+          shooter.commandVelocity(() -> 6000),
           FeedingCommands.feedCommand(turret, shooter, indexer)
       )
 );

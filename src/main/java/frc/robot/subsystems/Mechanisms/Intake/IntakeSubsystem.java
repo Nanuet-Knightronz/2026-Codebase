@@ -87,7 +87,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command toggleCommand() {
         return Commands.runOnce(() -> {
             if (isDown) {
-                moveToPosition(100);
+                moveToPosition(70);
             } else {
                 moveToPosition(0);
             }

@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
+
 public class TurretSubsystem extends SubsystemBase {
 
   private final TurretIO io;
@@ -17,8 +20,12 @@ public class TurretSubsystem extends SubsystemBase {
 
   private Rotation2d zeroOffset = Rotation2d.kZero;
 
+   private final EasyCRT crt;
+  
+
   public TurretSubsystem(TurretIO io) {
     this.io = io;
+    this.crt = 
   }
 
   private double normalizeRotations(double rotations) {

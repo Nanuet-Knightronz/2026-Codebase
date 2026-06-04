@@ -2,6 +2,9 @@ package frc.robot.subsystems.Mechanisms.Shooter;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -11,26 +14,32 @@ public class ShooterIOTalonFX implements ShooterIO {
     private final TalonFX left = new TalonFX(35);
     private final TalonFX right = new TalonFX(25);
 
-    private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+    private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
     public ShooterIOTalonFX() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
-        config.Slot0.kP = 0.12;
+        config.Slot0.kP = 0.5;
         config.Slot0.kI = 0.0;
         config.Slot0.kD = 0.0;
-        config.Slot0.kV = 0.12;
-        config.Slot0.kS = 0.0;
+        config.Slot0.kV = 0.13;
+        config.Slot0.kS = 0.4;
 
-        left.getConfigurator().apply(config);
-        right.getConfigurator().apply(config);
+        config.Feedback.SensorToMechanismRatio = 1;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+        // left.getConfigurator().apply(config);
+        // right.getConfigurator().apply(config);
 
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         right.getConfigurator().apply(config);
 
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         left.getConfigurator().apply(config);
+
+        left.setControl(new Follower(25, MotorAlignmentValue.Opposed));
+        right.optimizeBusUtilization();
     }
 
     @Override

@@ -355,7 +355,7 @@ public class Vision
     /**
      * Center Camera
      */
-    INTAKE_CAM("intake_cam",
+    INTAKE_CAM("INTAKECAM",
                new Rotation3d(0, Units.degreesToRadians(0), 0),
                new Translation3d(Units.inchesToMeters(-4.628),
                                  Units.inchesToMeters(-10.687),
