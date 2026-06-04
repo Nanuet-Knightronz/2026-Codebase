@@ -7,6 +7,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import static edu.wpi.first.units.Units.Rotations;
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -14,11 +17,36 @@ public class TurretSubsystem extends SubsystemBase {
 
   private boolean initialized = false;
   private double enableTimer = 0.0;
+  private final EasyCRTConfig easyCrtConfig;
+  private final EasyCRT crt;
 
   private Rotation2d zeroOffset = Rotation2d.kZero;
 
   public TurretSubsystem(TurretIO io) {
     this.io = io;
+    this.easyCrtConfig = buildEasyCrtConfig();
+    this.crt = new EasyCRT(easyCrtConfig);
+  }
+
+  private EasyCRTConfig buildEasyCrtConfig() {
+    return new EasyCRTConfig(
+      () -> Rotations.of(io.getSmallEncoderPosition().getRotations()),
+      () -> Rotations.of(io.getBigEncoderPosition().getRotations())
+    )
+    .withCommonDriveGear(
+        1.0,   
+        200,   
+        19,    
+        21     
+    )
+    .withAbsoluteEncoderOffsets(
+       Rotations.of(0.0),
+       Rotations.of(0.0)
+    )
+    .withAbsoluteEncoderInversions(
+        true,
+        true
+    );
   }
 
   private double normalizeRotations(double rotations) {
@@ -27,9 +55,13 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   private Rotation2d getAbsoluteAngle() {
-    return Rotation2d.fromRotations(
-        normalizeRotations(io.getSmallEncoderPosition().getRotations())
-    );
+    return crt.getAngleOptional()
+      .map(angle -> 
+        Rotation2d.fromRotations(
+          angle.in(Rotations)
+        )
+      )
+      .orElse(Rotation2d.kZero);
   }
 
   public Rotation2d getPosition() {

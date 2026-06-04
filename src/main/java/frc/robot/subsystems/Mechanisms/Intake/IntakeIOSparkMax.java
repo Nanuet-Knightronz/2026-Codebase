@@ -11,8 +11,8 @@ public class IntakeIOSparkMax implements IntakeIO {
 
     private final SparkMax armMotor = new SparkMax(14, MotorType.kBrushless);
 
-    private final SparkMax bottomRoller = new SparkMax(47, MotorType.kBrushless);
-    private final SparkMax topRoller = new SparkMax(48, MotorType.kBrushless);
+    // private final SparkMax bottomRoller = new SparkMax(47, MotorType.kBrushless);
+    // private final SparkMax topRoller = new SparkMax(48, MotorType.kBrushless);
 
     private final SparkClosedLoopController controller;
 
@@ -32,17 +32,17 @@ public class IntakeIOSparkMax implements IntakeIO {
         armMotor.configure(arm_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         controller = armMotor.getClosedLoopController();
 
-        SparkMaxConfig roller_config = new SparkMaxConfig();
+        // SparkMaxConfig roller_config = new SparkMaxConfig();
 
-        roller_config.idleMode(SparkBaseConfig.IdleMode.kCoast);
-        roller_config.smartCurrentLimit(20);
-        roller_config.voltageCompensation(12);
+        // roller_config.idleMode(SparkBaseConfig.IdleMode.kCoast);
+        // roller_config.smartCurrentLimit(20);
+        // roller_config.voltageCompensation(12);
         
-        roller_config.inverted(false); // bottom
-        bottomRoller.configure(roller_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // roller_config.inverted(false); // bottom
+        // bottomRoller.configure(roller_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        roller_config.inverted(true); 
-        topRoller.configure(roller_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // roller_config.inverted(true); 
+        // topRoller.configure(roller_config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     @Override
@@ -51,10 +51,11 @@ public class IntakeIOSparkMax implements IntakeIO {
     inputs.appliedVolts = armMotor.getAppliedOutput() * 12.0;
     inputs.currentAmps = armMotor.getOutputCurrent();
 
-    inputs.topRollerVelocityRPM = topRoller.getEncoder().getVelocity();
-    inputs.bottomRollerVelocityRPM = bottomRoller.getEncoder().getVelocity();
-    inputs.topRollerVolts = topRoller.getAppliedOutput() * 12.0;
-    inputs.bottomRollerVolts = bottomRoller.getAppliedOutput() * 12.0;}
+    // inputs.topRollerVelocityRPM = topRoller.getEncoder().getVelocity();
+    // inputs.bottomRollerVelocityRPM = bottomRoller.getEncoder().getVelocity();
+    // inputs.topRollerVolts = topRoller.getAppliedOutput() * 12.0;
+    // inputs.bottomRollerVolts = bottomRoller.getAppliedOutput() * 12.0;
+    }
 
     @Override
     public void setPosition(double degrees) {
@@ -70,10 +71,10 @@ public class IntakeIOSparkMax implements IntakeIO {
         return armMotor.getEncoder().getPosition();
     }
 
-    public void setRollerVoltage(double volts) {
-      topRoller.setVoltage(volts);
-      bottomRoller.setVoltage(volts);
-    }
+    // public void setRollerVoltage(double volts) {
+    //   topRoller.setVoltage(volts);
+    //   bottomRoller.setVoltage(volts);
+    // }
 
     @Override
     public void zeroEncoder() {

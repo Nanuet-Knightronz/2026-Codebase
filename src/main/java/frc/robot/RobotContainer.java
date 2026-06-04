@@ -203,7 +203,7 @@ public class RobotContainer
       driverXbox.rightBumper().onTrue(Commands.none());
     } else
     {
-      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyroWithAlliance)));
+      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
       driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
       driverXbox.b().onTrue(intake.zeroCommand());
       driverXbox.y().whileTrue(drivebase.aimAtTarget(Cameras.INTAKE_CAM));
