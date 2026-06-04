@@ -19,6 +19,13 @@ public class IntakeIOTalonFX implements IntakeIO{
     public IntakeIOTalonFX() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
+        config.CurrentLimits.StatorCurrentLimit = 120;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 80;
+        config.CurrentLimits.SupplyCurrentLowerLimit = 40;
+        config.CurrentLimits.SupplyCurrentLowerTime = 1;
+        
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
