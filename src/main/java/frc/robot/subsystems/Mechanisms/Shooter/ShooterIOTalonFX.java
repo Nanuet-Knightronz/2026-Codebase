@@ -7,6 +7,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 public class ShooterIOTalonFX implements ShooterIO {
@@ -20,7 +21,7 @@ public class ShooterIOTalonFX implements ShooterIO {
     public ShooterIOTalonFX() {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
-        config.Slot0.kP = 0.5;
+        config.Slot0.kP = 0.425;
         config.Slot0.kI = 0.0;
         config.Slot0.kD = 0.0;
         config.Slot0.kV = 0.13;
@@ -60,27 +61,32 @@ public class ShooterIOTalonFX implements ShooterIO {
     @Override
     public void setVelocityRPM(double rpm) {
         double rps = rpm / 60.0;
-        left.setControl(velocityRequest.withVelocity(rps));
-        right.setControl(velocityRequest.withVelocity(-rps));
+        right.setControl(velocityRequest.withVelocity(rps));
     }
 
     @Override
     public void setVoltage(double volts) {
-        left.setControl(voltageRequest.withOutput(volts));
         right.setControl(voltageRequest.withOutput(volts));
     }
 
     @Override
-    public void configPID(double kP, double kI, double kD, double kV, double kS) {
-        TalonFXConfiguration config = new TalonFXConfiguration();
+public void configPID(
+    double kP,
+    double kI,
+    double kD,
+    double kV,
+    double kS
+) {
+    Slot0Configs pidConfigs = new Slot0Configs();
 
-        config.Slot0.kP = kP;
-        config.Slot0.kI = kI;
-        config.Slot0.kD = kD;
-        config.Slot0.kV = kV;
-        config.Slot0.kS = kS;
+    right.getConfigurator().refresh(pidConfigs);
 
-        left.getConfigurator().apply(config);
-        right.getConfigurator().apply(config);
-    }
+    pidConfigs.kP = kP;
+    pidConfigs.kI = kI;
+    pidConfigs.kD = kD;
+    pidConfigs.kV = kV;
+    pidConfigs.kS = kS;
+
+    right.getConfigurator().apply(pidConfigs);
+}
 }
