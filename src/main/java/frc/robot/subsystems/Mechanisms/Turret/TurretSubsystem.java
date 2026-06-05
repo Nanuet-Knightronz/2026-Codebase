@@ -11,9 +11,6 @@ import static edu.wpi.first.units.Units.Rotations;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
 
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
-
 public class TurretSubsystem extends SubsystemBase {
 
   private final TurretIO io;
@@ -24,9 +21,6 @@ public class TurretSubsystem extends SubsystemBase {
   private final EasyCRT crt;
 
   private Rotation2d zeroOffset = Rotation2d.kZero;
-
-   private final EasyCRT crt;
-  
 
   public TurretSubsystem(TurretIO io) {
     this.io = io;
